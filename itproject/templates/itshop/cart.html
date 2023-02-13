@@ -1,0 +1,43 @@
+{% extends 'itshop/base.html' %}
+<br />
+{% load custom_filter %}
+<br />
+{% load cart %}
+<br />
+{% block content %}
+<center>
+  <table class="table table-border table-hover table-print">
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Product Name</th>
+        <th>Image</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for product in products %}
+      <tr>
+        <td>{{forloop.counter}}</td>
+        <td>{{product.name}}</td>
+        <td><img style="height: 80px" src="{{product.image.url}}" alt="" /></td>
+        <td>{{product.quantity}}</td>
+        <td>{{product.discount|price:product.sell_price}}</td>
+        <td>{{product.discount|price:product.sell_price}}</td>
+      </tr>
+      <tfoot>
+        <th>{{products|total_cart_price:request.session.cart|currency}}</th>
+      </tfoot>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <form action="" method="post">
+   
+
+    <button class="btn btn-border">Check Out</button>
+  </form>
+</center>
+{% endblock %}
