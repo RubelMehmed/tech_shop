@@ -1,7 +1,8 @@
-from django.shortcuts import render , redirect , HttpResponseRedirect
-from .models import Product, Category, Order, Customer
-
+from django.contrib.auth.hashers import check_password, make_password
+from django.shortcuts import HttpResponseRedirect, redirect, render
 from django.views import View
+
+from .models import Category, Customer, Order, Product
 
 
 # Create your views here.
@@ -72,11 +73,46 @@ class Cart(View) :
 
 
 
-# class Signup(View):
-#     pass
+class Signup(View):
+    pass
 
-# class Login(View):
-#     pass
+
+class Check_out(View):
+    def post(self,request):
+        name=request.POST.get('name')
+        address=request.POST.get('address')
+        cell=request.POST.get('cell')
+        customer = request.session.get('customer')
+        # customer=Customer.objects.get(id=1)
+        cart=request.session.get('cart')
+        products=Product.get_product_by_id(list(cart.keys()))
+
+        for product in products:
+            order = Order(
+                product=product,
+                customer=customer,
+                quantity=1,
+                delevery_address=address,
+                price=product.sell_price - (product.sell_price * product.discount / 100),
+                status=False,
+                phone=cell
+            )
+
+
+            # order=Order(
+            #     product=product,
+            #     customer=customer,
+            #     quantity=1,
+            #     delivery_address=address,
+            #     price=product.sell_price-(product.sell_price*product.discount)/100,
+            #     status='pending',
+            #     phone=cell
+
+            # )
+            order.placeOrder()
+            orders=Order.get_orders_by_customer(customer.id)
+        request.session['cart'] = {}
+        return render(request, 'itshop/orders.html', {'products':products})
 
 
 # class CheckOut(View):
@@ -119,3 +155,34 @@ class Cart(View) :
 # def logout(request):
 #     request.session.clear()
 #     return redirect('login')
+
+
+class Login(View):
+    return_url = None
+
+    def get(self, request):
+        Login.return_url = request.GET.get ('return_url')
+        return render (request, 'itshop/login.html')
+
+    def post(self, request):
+        email = request.POST.get ('email')
+        password = request.POST.get ('password')
+        customer = Customer.get_customer_by_email (email)
+        error_message = None
+        if customer:
+            flag = check_password (password, customer.password)
+            if flag:
+                request.session['customer'] = customer.id
+
+                if Login.return_url:
+                    return HttpResponseRedirect (Login.return_url)
+                else:
+                    Login.return_url = None
+                    return redirect ('homepage')
+            else:
+                error_message = 'Invalid !!'
+        else:
+            error_message = 'Invalid !!'
+
+        print (email, password)
+        return render (request, 'itshop/login.html', {'error': error_message})

@@ -1,0 +1,92 @@
+{% extends 'itshop/base.html' %} {% load custom_filter %} {% load cart %}
+<br />
+{% block content %}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>CheckOut</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="" />
+    <meta name="author" content="" />
+    <!-- <script src=
+"https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js">
+	</script> -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  </head>
+
+  <body onload="{window.print()}">
+    <div id="pdf" class="container">
+      <div id="divID">
+        <div class="">
+          <h1>You've successflly completed your orders</h1>
+          <table class="table table-border table-hover table-print">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Product Name</th>
+                <th>Image</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <!-- <th>Total</th> -->
+              </tr>
+            </thead>
+            <tbody>
+              {% for product in products %}
+              <tr>
+                <td>{{forloop.counter}}</td>
+                <td>{{product.name}}</td>
+                <td>
+                  <img
+                    style="height: 36px"
+                    src="{{product.image.url}}"
+                    alt=""
+                  />
+                </td>
+                <td>{{product.quantity}}</td>
+                <td>{{product.discount|price:product.sell_price}}</td>
+              </tr>
+              {% endfor %}
+              <tr>
+                <td></td>
+                <td rowspan="4">Total Price</td>
+
+                <td rowspan="4">{{products|grand_total:100}}</td>
+                <!-- <td rowspan="3">{{products|total_cart_price:request.session.cart|currency}}</td> -->
+
+                <!-- <label for="">Grand Total: {{products|grand_total:100}}</label> -->
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <input
+        id="hide-btn"
+        type="button"
+        value="PDF"
+        onclick="convertHTMLtoPDF()"
+      />
+    </div>
+
+    <script type="text/javascript">
+      function convertHTMLtoPDF() {
+        const { jsPDF } = window.jspdf;
+
+        var hide_btn = (document.querySelector("#hide-btn").style.display =
+          "none");
+        var doc = new jsPDF("l", "mm", [1500, 1400]);
+        var pdfjs = document.querySelector("#pdf");
+
+        doc.html(pdfjs, {
+          callback: function (doc) {
+            doc.save("newpdf.pdf");
+          },
+          x: 12,
+          y: 12,
+        });
+      }
+    </script>
+  </body>
+</html>
+{% endblock %}
